@@ -16,12 +16,16 @@ export const messagesRouter = createTRPCRouter({
     create : baseProcedure
         .input(
             z.object({
-                value: z.string().min(1, {message: "Message is Required"}),
+                value: z.string()
+                    .min(1, {message: "Prompt is Required"})
+                    .max(10000, {message: "Prompt is too long"}),
+                projectId : z.string()
             }),
         )
         .mutation(async ({input}) => {
             const createdMessage = await prisma.message.create({
                 data: {
+                    projectId: input.projectId,
                     content: input.value,
                     role: "USER",
                     type: "RESULT",
@@ -30,7 +34,8 @@ export const messagesRouter = createTRPCRouter({
             await inngest.send({
                 name: "codeAgent/run",
                 data: {
-                    value: input.value
+                    value: input.value,
+                    projectId: input.value
                 }
             })
             return createdMessage
