@@ -8,6 +8,9 @@ import {
     ResizableHandle,
     ResizablePanelGroup
 } from "@/components/ui/resizable"
+import { Suspense, useState } from "react";
+import { Fragment } from "@/generated/prisma";
+import { ProjectHeader } from "../components/project-header";
 
 interface Props {
     projectId : string
@@ -15,6 +18,7 @@ interface Props {
 
 const ProjectView = ({projectId} : Props) => {
     const trpc = useTRPC();
+    const [activeFragment, setActiveFragment] = useState<Fragment | null>(null)
     const {data : project} = useSuspenseQuery(trpc.projects.getOne.queryOptions({
         id: projectId
     }))
@@ -29,7 +33,16 @@ const ProjectView = ({projectId} : Props) => {
                     minSize={20}
                     className="flex flex-col min-h-0"
                 >
-                    <MessageContainer projectId={projectId}/>
+                    <Suspense fallback={<p>Loading Project...</p>}>
+                        <ProjectHeader projectId={projectId}/>
+                    </Suspense>
+                    <Suspense fallback={<p>Loading Messages ...</p>}>
+                        <MessageContainer 
+                            projectId={projectId}
+                            activeFragment={activeFragment}
+                            setActiveFragment={setActiveFragment}
+                        />
+                    </Suspense>
                 </ResizablePanel>
                 <ResizableHandle withHandle/>
                 <ResizablePanel
