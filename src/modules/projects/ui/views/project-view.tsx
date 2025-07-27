@@ -11,6 +11,7 @@ import {
 import { Suspense, useState } from "react";
 import { Fragment } from "@/generated/prisma";
 import { ProjectHeader } from "../components/project-header";
+import { FragmentWeb } from "../components/fragment-web";
 
 interface Props {
     projectId : string
@@ -18,6 +19,7 @@ interface Props {
 
 const ProjectView = ({projectId} : Props) => {
     const trpc = useTRPC();
+    console.log("From Project View : ", projectId)
     const [activeFragment, setActiveFragment] = useState<Fragment | null>(null)
     const {data : project} = useSuspenseQuery(trpc.projects.getOne.queryOptions({
         id: projectId
@@ -49,7 +51,7 @@ const ProjectView = ({projectId} : Props) => {
                     defaultSize={65}
                     minSize={50}
                 >
-                    Todo : Preview
+                    {!!activeFragment && <FragmentWeb data={activeFragment}/>}
                 </ResizablePanel>
             </ResizablePanelGroup>
         </div>

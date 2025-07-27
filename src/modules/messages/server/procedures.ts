@@ -44,7 +44,7 @@ export const messagesRouter = createTRPCRouter({
                 name: "codeAgent/run",
                 data: {
                     value: input.value,
-                    projectId: input.value
+                    projectId: input.projectId
                 }
             })
             return createdMessage

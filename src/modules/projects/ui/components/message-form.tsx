@@ -21,6 +21,7 @@ const formSchema = z.object({
 
 export const MessageForm = ({ projectId } : MessageFormProps) => {
     const trpc = useTRPC()
+    console.log("From Message Form : ", projectId)
     const queryClient = useQueryClient()
     const createMessage = useMutation(trpc.messages.create.mutationOptions({
         onSuccess: (data) => {
@@ -41,7 +42,7 @@ export const MessageForm = ({ projectId } : MessageFormProps) => {
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         await createMessage.mutateAsync({
             value: values.value,
-            projectId
+            projectId: projectId
         })
     }
     const [isFocused, setIsFocused] = useState(false)
