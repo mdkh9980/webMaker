@@ -148,7 +148,8 @@ export const codeAgentFunction = inngest.createFunction(
       return `https://${host}`
 
     })
-
+    console.log("Project Id Foreign Key : ", event.data.projectId)
+    console.log("Whole Object : ", event.data)
     await step.run("save-to-database", async () => {
       if(isError){
         return await prisma.message.create({
