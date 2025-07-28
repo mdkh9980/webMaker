@@ -1,6 +1,7 @@
 import { createTRPCRouter, protectedProcedure } from "../../../trpc/init"
 import { inngest } from "@/inngest/client"
 import prisma from "@/lib/db"
+import { consumeCredits } from "@/lib/usage"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 
@@ -36,7 +37,7 @@ export const messagesRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({input, ctx}) => {
-            const existingProject = await prisma.findUnique({
+            const existingProject = await prisma.project.findUnique({
                 where: {
                     id: input.projectId,
                     userId: ctx.auth.userId
@@ -45,9 +46,18 @@ export const messagesRouter = createTRPCRouter({
             if(!existingProject){
                 throw new TRPCError({code: "NOT_FOUND", message: "Project Not Found"})
             }
+            try {
+                await consumeCredits()
+            } catch (error) {
+                if(error instanceof Error){
+                    throw new TRPCError({code: "BAD_REQUEST", message: "Something went Wrong"})
+                } else {
+                    throw new TRPCError({code: "TOO_MANY_REQUESTS", message: "You have run out of credits"})
+                }
+            }
             const createdMessage = await prisma.message.create({
                 data: {
-                    projectId: existingProject.projectId,
+                    projectId: existingProject.id,
                     content: input.value,
                     role: "USER",
                     type: "RESULT",
