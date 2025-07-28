@@ -9,6 +9,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { cn } from "@/lib/utils"
 import { useTRPC } from "@/trpc/client"
 import { Button } from "@/components/ui/button"
+import {useClerk} from "@clerk/nextjs"
 import { Form, FormField } from "@/components/ui/form"
 import { useRouter } from "next/navigation"
 import { PROJECT_TEMPLATES } from "../../constants"
@@ -21,6 +22,7 @@ const formSchema = z.object({
 export const ProjectForm = () => {
     const router = useRouter()
     const trpc = useTRPC()
+    const clerk = useClerk()
     const queryClient = useQueryClient()
     const createProject = useMutation(trpc.projects.create.mutationOptions({
         onSuccess: (data) => {
@@ -32,6 +34,9 @@ export const ProjectForm = () => {
         onError: (error) => {
             // Redirect to Pricing Page if specific error
             toast.error(error.message)
+            if(error.data?.code === "UNAUTHORIZED"){
+                clerk.openSignIn()
+            }
         }
     }));
     const form = useForm<z.infer<typeof formSchema>>({
